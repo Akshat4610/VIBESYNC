@@ -230,7 +230,7 @@
 
         <!-- Player -->
         <div class="player glass">
-            <video id="logoVideo" autoplay loop muted playsinline>
+            <video id="logoVideo" loop muted playsinline>
                 <source src="VIBSYNC.mp4" type="video/mp4">
             </video>
 
@@ -359,51 +359,25 @@
             // 🔥 Redirect to converter site
             window.open("https://ytmp3.nu", "_blank");
         };
-        document.querySelectorAll("#playlist li").forEach(li => {
-            li.style.background = "none";
-        });
 
-        li.style.background = "rgba(0,255,255,0.3)";
-
-        audio.onended = () => {
-            // next song logic (index maintain karna padega)
-        };
-
-        li.innerHTML = file.name + " ❌";
-
-        li.onclick = () => {
-            audio.src = URL.createObjectURL(file);
-            songName.innerText = file.name;
-            audio.play();
-
-            document.querySelectorAll("#playlist li").forEach(el => {
-                el.classList.remove("active");
-            });
-
-            li.classList.add("active");
-        };
-
-        const audio = document.getElementById("audio");
         const video = document.getElementById("logoVideo");
 
-        // ▶️ Sync play
-        audio.onplay = () => {
-            video.play();
-        };
-
-        // ⏸️ Sync pause
-        audio.onpause = () => {
-            video.pause();
-        };
-
-        // 🔁 Restart video when song restarts
-        audio.onended = () => {
+        // ▶️ Play
+        audio.addEventListener("play", () => {
             video.currentTime = 0;
-        };
+            video.play().catch(err => console.log(err));
+        });
 
-        audio.ontimeupdate = () => {
-            video.currentTime = audio.currentTime;
-        };
+        // ⏸️ Pause
+        audio.addEventListener("pause", () => {
+            video.pause();
+        });
+
+        // 🔁 End
+        audio.addEventListener("ended", () => {
+            video.pause();
+            video.currentTime = 0;
+        });
 
     </script>
 
