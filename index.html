@@ -148,6 +148,57 @@
         #playlist li.active {
             background: rgba(0, 255, 255, 0.3);
         }
+
+        /* 🎬 Logo Video Styling */
+        #logoVideo {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 20px;
+
+            display: block;
+            margin: 20px auto;
+
+            /* 🔥 Glow Effect */
+            box-shadow:
+                0 0 15px #00f2ff,
+                0 0 30px #007bff,
+                0 0 50px rgba(0, 242, 255, 0.5);
+
+            /* ⚡ Smooth animation */
+            animation: glow 2s infinite alternate;
+
+            transition: transform 0.3s ease;
+        }
+
+        /* 🔥 Hover Effect */
+        #logoVideo:hover {
+            transform: scale(1.05);
+        }
+
+        /* ✨ Glow Animation */
+        @keyframes glow {
+            from {
+                box-shadow:
+                    0 0 10px #00f2ff,
+                    0 0 20px #007bff;
+            }
+
+            to {
+                box-shadow:
+                    0 0 25px #00f2ff,
+                    0 0 50px #007bff,
+                    0 0 70px rgba(0, 242, 255, 0.7);
+            }
+        }
+
+        /* 📱 Mobile Responsive */
+        @media (max-width: 768px) {
+            #logoVideo {
+                width: 130px;
+                height: 130px;
+            }
+        }
     </style>
 </head>
 
@@ -179,7 +230,9 @@
 
         <!-- Player -->
         <div class="player glass">
-            <img src="viby.png" id="cover" alt="Cover Art">
+            <video id="logoVideo" autoplay loop muted playsinline>
+                <source src="VIBSYNC.mp4" type="video/mp4">
+            </video>
 
             <h3 id="songName">No Song Selected</h3>
 
@@ -328,6 +381,28 @@
             });
 
             li.classList.add("active");
+        };
+
+        const audio = document.getElementById("audio");
+        const video = document.getElementById("logoVideo");
+
+        // ▶️ Sync play
+        audio.onplay = () => {
+            video.play();
+        };
+
+        // ⏸️ Sync pause
+        audio.onpause = () => {
+            video.pause();
+        };
+
+        // 🔁 Restart video when song restarts
+        audio.onended = () => {
+            video.currentTime = 0;
+        };
+
+        audio.ontimeupdate = () => {
+            video.currentTime = audio.currentTime;
         };
 
     </script>
