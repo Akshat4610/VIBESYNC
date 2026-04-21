@@ -20,6 +20,19 @@
             height: 100vh;
         }
 
+        .app {
+            display: grid;
+            grid-template-columns: 280px 280px 1fr;
+            /* 🔥 fixed width */
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .sidebar,
+        .yt-section {
+            min-width: 250px;
+        }
+
         /* Glass */
         .glass {
             background: rgba(255, 255, 255, 0.08);
@@ -88,6 +101,7 @@
         /* 📱 Mobile */
         @media (max-width: 768px) {
             .app {
+                display: flex;
                 flex-direction: column;
             }
 
@@ -199,6 +213,96 @@
                 height: 130px;
             }
         }
+
+        .mini-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 10px 20px;
+            color: white;
+
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .mini-player button {
+            margin: 0 5px;
+            padding: 8px 10px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, #00f2ff, #007bff);
+            color: white;
+        }
+
+        #miniProgress {
+            width: 120px;
+        }
+
+        .mini-player {
+            border-radius: 15px 15px 0 0;
+        }
+
+        .mini-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 10px 20px;
+            color: white;
+
+            z-index: 9999;
+            /* 🔥 click issue fix */
+        }
+
+        .mini-player div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mini-player button {
+            width: 40px;
+            height: 40px;
+
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 18px;
+
+            background: linear-gradient(90deg, #00f2ff, #007bff);
+        }
+
+        .mini-player * {
+            pointer-events: auto;
+        }
+
+        body {
+            padding-bottom: 70px;
+            /* 🔥 mini player overflow... */
+        }
     </style>
 </head>
 
@@ -243,10 +347,19 @@
                 <button id="play">▶️</button>
                 <button id="next">⏭️</button>
             </div>
+        </div>
+        <div class="mini-player">
+            <span id="miniSong">No song</span>
+            <input type="range" id="miniProgress" value="0">
 
-            <input type="range" id="progress" value="0">
+            <div>
+                <button id="miniPrev">⏮️</button>
+                <button id="miniPlay">▶️</button>
+                <button id="miniNext">⏭️</button>
+            </div>
         </div>
 
+        <input type="range" id="progress" value="0">
     </div>
 
     <!-- 🔥 JS at bottom (IMPORTANT) -->
@@ -259,6 +372,19 @@
             const songName = document.getElementById("songName");
             const playBtn = document.getElementById("play");
             const progress = document.getElementById("progress");
+
+            let songs = [];
+            let currentIndex = 0;
+
+            const miniPlay = document.getElementById("miniPlay");
+            const miniNext = document.getElementById("miniNext");
+            const miniPrev = document.getElementById("miniPrev");
+            const miniSong = document.getElementById("miniSong");
+
+            // 🎵 Song name update
+            function updateMiniPlayer(name) {
+                miniSong.innerText = name;
+            }
 
             let db;
 
@@ -297,6 +423,7 @@
             // 📜 Load songs
             function loadSongs() {
                 playlist.innerHTML = "";
+                songs = [];
 
                 const tx = db.transaction("songs", "readonly");
                 const store = tx.objectStore("songs");
@@ -306,15 +433,14 @@
 
                     if (cursor) {
                         const file = cursor.value;
+                        songs.push(file);
 
                         const li = document.createElement("li");
                         li.textContent = file.name;
 
                         li.onclick = () => {
-                            const url = URL.createObjectURL(file);
-                            audio.src = url;
-                            songName.innerText = file.name;
-                            audio.play();
+                            currentIndex = songs.indexOf(file);
+                            playSong(currentIndex);
                         };
 
                         playlist.appendChild(li);
@@ -333,6 +459,61 @@
                     playBtn.innerText = "▶️";
                 }
             };
+
+            function playSong(index) {
+                const file = songs[index];
+
+                if (!file) return;
+
+                const url = URL.createObjectURL(file);
+
+                audio.src = url;
+                songName.innerText = file.name;
+
+                audio.play();
+
+                // highlight
+                document.querySelectorAll("#playlist li").forEach(el => {
+                    el.classList.remove("active");
+                });
+
+                playlist.children[index].classList.add("active");
+                updateMiniPlayer(file.name);
+            }
+
+            const nextBtn = document.getElementById("next");
+            const prevBtn = document.getElementById("prev");
+
+            nextBtn.onclick = () => {
+                currentIndex++;
+
+                if (currentIndex >= songs.length) {
+                    currentIndex = 0; // loop
+                }
+
+                playSong(currentIndex);
+            };
+
+            prevBtn.onclick = () => {
+                currentIndex--;
+
+                if (currentIndex < 0) {
+                    currentIndex = songs.length - 1;
+                }
+
+                playSong(currentIndex);
+            };
+
+            audio.addEventListener("ended", () => {
+                currentIndex++;
+
+                if (currentIndex >= songs.length) {
+                    currentIndex = 0;
+                }
+
+                playSong(currentIndex);
+            });
+
 
             // 📊 Progress bar
             audio.ontimeupdate = () => {
@@ -378,6 +559,42 @@
             video.pause();
             video.currentTime = 0;
         });
+
+        miniPlay.onclick = () => {
+            if (audio.paused) {
+                audio.play();
+                miniPlay.innerText = "⏸️";
+            } else {
+                audio.pause();
+                miniPlay.innerText = "▶️";
+            }
+        };
+
+        miniNext.onclick = () => {
+            nextBtn.click();
+        };
+
+        miniPrev.onclick = () => {
+            prevBtn.click();
+        };
+
+        audio.addEventListener("play", () => {
+            miniPlay.innerText = "⏸️";
+        });
+
+        audio.addEventListener("pause", () => {
+            miniPlay.innerText = "▶️";
+        });
+
+        const miniProgress = document.getElementById("miniProgress");
+
+        audio.addEventListener("timeupdate", () => {
+            miniProgress.value = (audio.currentTime / audio.duration) * 100 || 0;
+        });
+
+        miniProgress.oninput = () => {
+            audio.currentTime = (miniProgress.value / 100) * audio.duration;
+        };
 
     </script>
 
