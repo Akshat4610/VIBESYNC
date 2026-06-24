@@ -8,6 +8,12 @@
     <link rel="icon" type="image/png" href="favicon.png.png">
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial;
@@ -126,21 +132,34 @@
                 width: 120px;
             }
 
-
-            .controls button {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                border: none;
-                font-size: 22px;
-                cursor: pointer;
-                transition: .3s;
+            .app {
+                width: 100%;
+                overflow-x: hidden;
             }
 
-            .controls button:hover {
-                transform: scale(1.08);
+            .sidebar,
+            .yt-section,
+            .player {
+                width: calc(100% - 20px);
+                margin: 10px auto;
             }
         }
+
+
+        .controls button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .controls button:hover {
+            transform: scale(1.08);
+        }
+
 
         #progress {
             width: 100%;
@@ -349,13 +368,11 @@
         }
 
         .glass {
+            box-sizing: border-box;
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
-
             border: 1px solid rgba(255, 255, 255, .15);
-
             border-radius: 24px;
-
             box-shadow:
                 0 8px 32px rgba(0, 0, 0, .25);
         }
