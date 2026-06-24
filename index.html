@@ -58,10 +58,15 @@
             padding: 10px;
             cursor: pointer;
             border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            transition: .3s;
         }
 
         #playlist li:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
         }
 
         /* Player */
@@ -70,6 +75,10 @@
             margin: 20px;
             text-align: center;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         #cover {
@@ -117,13 +126,24 @@
                 width: 120px;
             }
 
+
             .controls button {
-                font-size: 16px;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                border: none;
+                font-size: 22px;
+                cursor: pointer;
+                transition: .3s;
             }
 
-            #progress {
-                width: 100%;
+            .controls button:hover {
+                transform: scale(1.08);
             }
+        }
+
+        #progress {
+            width: 100%;
         }
 
         .yt-section {
@@ -161,6 +181,9 @@
 
         #playlist li.active {
             background: rgba(0, 255, 255, 0.3);
+            border-left: 4px solid #00f2ff;
+            background:
+                rgba(0, 255, 255, .15);
         }
 
         /* 🎬 Logo Video Styling */
@@ -309,12 +332,42 @@
             border-radius: 10px;
             margin-left: 05px;
         }
+
+        .hero {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .hero p {
+            opacity: .8;
+            margin-top: 5px;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+
+            border: 1px solid rgba(255, 255, 255, .15);
+
+            border-radius: 24px;
+
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, .25);
+        }
     </style>
 </head>
 
 <body>
 
-    <h2 style="text-align:center;">🎧 VibeSync - Your Music. Your Vibe. No Ads.</h2>
+    <div class="hero">
+        <h1>🎧 VibeSync</h1>
+        <p>Your Music • Your Vibe • No Ads</p>
+    </div>
 
     <div class="app">
 
@@ -334,9 +387,12 @@
 
             <p class="note">
                 ⚠️ You will be redirected to convert. Download MP3 and upload below.
-                ⚠️ This service may be not available cause of YouTube restrictions. I am searching for a better
-                solution.
             </p>
+            <p class="note">
+                ⚠️ This service may not be available in some cases due to YouTube restrictions.If the link doesn't
+                work,try again later.Or use different converter site.
+            </p>
+
         </div>
 
 
