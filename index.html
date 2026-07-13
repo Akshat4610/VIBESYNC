@@ -656,6 +656,96 @@
             color: var(--danger);
         }
 
+        .icon-btn.more-btn {
+            display: none;
+        }
+
+        .row-menu {
+            position: absolute;
+            z-index: 2500;
+            min-width: 180px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .row-menu.open {
+            display: flex;
+        }
+
+        .row-menu button {
+            background: none;
+            border: none;
+            color: var(--text);
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: .85rem;
+        }
+
+        .row-menu button:hover {
+            background: var(--surface-strong);
+        }
+
+        .row-menu button.danger {
+            color: var(--danger);
+        }
+
+        @media (max-width: 560px) {
+            .library {
+                padding: 16px;
+            }
+
+            .song-row {
+                flex-wrap: wrap;
+                row-gap: 8px;
+                gap: 8px;
+                padding: 12px 10px;
+            }
+
+            .song-row .idx {
+                display: none;
+            }
+
+            .song-row .title {
+                flex: 1 1 100%;
+                width: 100%;
+                order: 1;
+            }
+
+            .song-row .dur {
+                order: 3;
+                margin-right: auto;
+            }
+
+            .song-row .fav {
+                order: 4;
+            }
+
+            .song-row .add-btn,
+            .song-row .rename-btn,
+            .song-row .del-btn {
+                display: none;
+            }
+
+            .icon-btn.more-btn {
+                display: flex;
+                order: 5;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .song-row .dur {
+                display: none;
+            }
+
+            .song-row .fav {
+                margin-left: auto;
+            }
+        }
+
         .empty-state {
             text-align: center;
             padding: 50px 20px;
@@ -1643,47 +1733,86 @@
                     };
 
                     const addBtnEl = document.createElement("button");
-                    addBtnEl.className = "icon-btn";
+                    addBtnEl.className = "icon-btn add-btn";
                     addBtnEl.innerHTML = "☰";
                     addBtnEl.title = "Add to playlist";
                     addBtnEl.onclick = (e) => { e.stopPropagation(); openAddToPlaylist(key); };
 
                     const renameBtnEl = document.createElement("button");
-                    renameBtnEl.className = "icon-btn";
+                    renameBtnEl.className = "icon-btn rename-btn";
                     renameBtnEl.innerHTML = "✎";
                     renameBtnEl.title = "Rename";
-                    renameBtnEl.onclick = async (e) => {
-                        e.stopPropagation();
-                        const current = displayNameFor(key, song.file.name);
-                        const name = prompt("Rename song (this only changes the display name — your original file is kept safe):", current);
-                        if (!name || !name.trim()) return;
-                        await dbSetSongMeta(key, { displayName: name.trim() });
-                        state.metaByKey[key] = { ...(state.metaByKey[key] || {}), displayName: name.trim() };
-                        renderLibrary();
-                        if (isCurrentlyPlaying(key)) nowTitle.textContent = name.trim();
-                    };
+                    renameBtnEl.onclick = (e) => { e.stopPropagation(); doRenameSong(key, song); };
 
                     const delBtnEl = document.createElement("button");
-                    delBtnEl.className = "icon-btn del";
+                    delBtnEl.className = "icon-btn del del-btn";
                     delBtnEl.innerHTML = "🗑";
                     delBtnEl.title = "Delete";
-                    delBtnEl.onclick = async (e) => {
-                        e.stopPropagation();
-                        if (!confirm("Delete this song from your library? This can't be undone.")) return;
-                        await dbDeleteSong(key);
-                        state.songs = await dbGetAllSongs();
-                        state.playlists = await dbGetAllPlaylists();
-                        state.favorites = await dbGetFavorites(state.activeProfileId);
-                        renderPlaylists();
-                        renderLibrary();
-                        toast("Song deleted");
-                    };
+                    delBtnEl.onclick = (e) => { e.stopPropagation(); doDeleteSong(key); };
 
-                    li.append(idx, title, dur, favBtnEl, addBtnEl, renameBtnEl, delBtnEl);
+                    const moreBtnEl = document.createElement("button");
+                    moreBtnEl.className = "icon-btn more-btn";
+                    moreBtnEl.innerHTML = "⋯";
+                    moreBtnEl.title = "More";
+                    moreBtnEl.onclick = (e) => { e.stopPropagation(); openRowMenu(moreBtnEl, key, song); };
+
+                    li.append(idx, title, dur, favBtnEl, addBtnEl, renameBtnEl, delBtnEl, moreBtnEl);
                     li.onclick = () => playFromView(key);
                     songList.appendChild(li);
                 });
             }
+
+            async function doRenameSong(key, song) {
+                const current = displayNameFor(key, song.file.name);
+                const name = prompt("Rename song (this only changes the display name — your original file is kept safe):", current);
+                if (!name || !name.trim()) return;
+                await dbSetSongMeta(key, { displayName: name.trim() });
+                state.metaByKey[key] = { ...(state.metaByKey[key] || {}), displayName: name.trim() };
+                renderLibrary();
+                if (isCurrentlyPlaying(key)) nowTitle.textContent = name.trim();
+            }
+
+            async function doDeleteSong(key) {
+                if (!confirm("Delete this song from your library? This can't be undone.")) return;
+                await dbDeleteSong(key);
+                state.songs = await dbGetAllSongs();
+                state.playlists = await dbGetAllPlaylists();
+                state.favorites = await dbGetFavorites(state.activeProfileId);
+                renderPlaylists();
+                renderLibrary();
+                toast("Song deleted");
+            }
+
+            /* Small floating menu used on narrow screens to reach rename / add-to-playlist
+               / delete without those icons crowding the song name out of view. */
+            const rowMenu = document.createElement("div");
+            rowMenu.className = "row-menu glass";
+            rowMenu.innerHTML = `
+  <button data-action="rename">✎ Rename</button>
+  <button data-action="add">☰ Add to playlist</button>
+  <button data-action="delete" class="danger">🗑 Delete</button>
+`;
+            document.body.appendChild(rowMenu);
+            let rowMenuCtx = null;
+
+            function openRowMenu(anchorBtn, key, song) {
+                rowMenuCtx = { key, song };
+                const rect = anchorBtn.getBoundingClientRect();
+                rowMenu.style.top = `${window.scrollY + rect.bottom + 6}px`;
+                rowMenu.style.left = `${Math.min(window.scrollX + rect.left - 120, window.innerWidth - 190)}px`;
+                rowMenu.classList.add("open");
+            }
+            rowMenu.addEventListener("click", (e) => {
+                const btn = e.target.closest("button[data-action]");
+                if (!btn || !rowMenuCtx) return;
+                const { key, song } = rowMenuCtx;
+                rowMenu.classList.remove("open");
+                if (btn.dataset.action === "rename") doRenameSong(key, song);
+                else if (btn.dataset.action === "add") openAddToPlaylist(key);
+                else if (btn.dataset.action === "delete") doDeleteSong(key);
+            });
+            document.addEventListener("click", () => rowMenu.classList.remove("open"));
+            window.addEventListener("scroll", () => rowMenu.classList.remove("open"), true);
             function lazyLoadDuration(key, file, labelEl) {
                 const tempUrl = URL.createObjectURL(file);
                 const probe = new Audio();
