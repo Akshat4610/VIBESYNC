@@ -1095,8 +1095,38 @@
             }
 
             .mini-player {
-                padding: 10px 14px;
-                gap: 12px;
+                flex-wrap: wrap;
+                row-gap: 10px;
+                padding: 10px 14px 12px;
+            }
+
+            .mini-left {
+                flex: 1 1 100%;
+                order: 1;
+            }
+
+            .mini-controls {
+                flex: 1 1 100%;
+                order: 2;
+                justify-content: center;
+                gap: 6px;
+            }
+
+            body {
+                padding-bottom: 150px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .mini-controls button {
+                width: 30px;
+                height: 30px;
+                font-size: .9rem;
+            }
+
+            .mini-controls #playBtn {
+                width: 40px;
+                height: 40px;
             }
         }
 
